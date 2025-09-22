@@ -1,0 +1,17 @@
+---
+driver:
+  name: delegated
+
+platforms:
+  - name: instance
+    hosts: all   # Use your inventory hosts
+    groups:
+      - test_group
+
+provisioner:
+  name: ansible
+  playbooks:
+    converge: converge.yml
+
+verifier:
+  name: ansible
