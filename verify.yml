@@ -1,0 +1,44 @@
+---
+- name: Verify wag_access_addm role
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Check addmuser exists
+      command: id -u addmuser
+      register: user_check
+      changed_when: false
+      failed_when: user_check.rc != 0
+
+    - name: Check sudoers file exists
+      stat:
+        path: /etc/sudoers.d/60addmuser
+      register: sudoers_file
+    - assert:
+        that:
+          - sudoers_file.stat.exists
+          - sudoers_file.stat.mode == '0440'
+
+    - name: Check .ssh directory exists
+      stat:
+        path: /home/users/addmuser/.ssh
+      register: ssh_dir
+    - assert:
+        that:
+          - ssh_dir.stat.exists
+          - ssh_dir.stat.mode == '0700'
+
+    - name: Check authorized_keys exists
+      stat:
+        path: /home/users/addmuser/.ssh/authorized_keys
+      register: auth_keys
+    - assert:
+        that:
+          - auth_keys.stat.exists
+          - auth_keys.stat.mode == '0600'
+
+    - name: Check SSH key added
+      command: "grep 'ssh-rsa' /home/users/addmuser/.ssh/authorized_keys"
+      register: key_check
+      changed_when: false
+      failed_when: key_check.rc != 0
